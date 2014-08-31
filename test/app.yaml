@@ -5,6 +5,10 @@ api_version: 1
 threadsafe: true
 
 handlers:
+- url: /gae-backup
+  script: gae-backup-python.backup.app
+  login: admin
+
 - url: /makedata
   script: main.app
   login: admin
