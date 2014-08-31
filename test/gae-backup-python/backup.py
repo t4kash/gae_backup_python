@@ -1,4 +1,13 @@
 # coding: utf-8
+"""
+GaeBackup
+
+Copyright (c) 2014 t4kash
+
+This software is released under the MIT License.
+
+http://opensource.org/licenses/mit-license.php
+"""
 import webapp2
 from google.appengine.ext import ndb
 from google.appengine.api import taskqueue
