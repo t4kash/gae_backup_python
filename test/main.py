@@ -45,9 +45,15 @@ class MakeData(webapp2.RequestHandler):
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.write('ok')
 
+class BackupMock(webapp2.RequestHandler):
+    def get(self):
+        self.response.set_status(200)
+
 
 app = webapp2.WSGIApplication(
     [
         ('/', MainPage),
         ('/makedata', MakeData),
-    ], debug=True)
+        ('/_ah/datastore_admin/backup.create', BackupMock),
+    ]
+    , debug=True)
