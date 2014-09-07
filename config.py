@@ -11,7 +11,7 @@ BACKUP_KINDS = '*'
 # backup filesystem. 'gs' is Google Cloud Storage or blank is Blobstore
 BACKUP_FILESYSTEM = ''
 
-BACKUP_GS_BUCKET_NAME = 'gae-backup-python-test.appspot.com'
+BACKUP_GS_BUCKET_NAME = 'xxx.appspot.com'
 
 # Delete backup files after n days
 BACKUP_EXPIRE_DAYS = 3
