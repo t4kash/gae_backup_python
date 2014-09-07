@@ -1,8 +1,8 @@
-Scheduled backup script for google app engine application
+Scheduled backup script for GAE datastore
 =========
 
 ## Synopsis
-Scheduled backup script for an app engine python application.
+Scheduled backup script for google app engine python application.
 Using Datastore Admin.
 * Back up specifies kinds or all kinds
 * Delete old backups
@@ -35,7 +35,6 @@ cron:
 - description: backup job
   url: /gae-backup
   schedule: every day 02:00
-  timezone: Asia/Tokyo
 ```
 
 ### Edit config.py
