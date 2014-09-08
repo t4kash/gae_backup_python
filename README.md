@@ -16,7 +16,7 @@ App engine console > Datastore Admin
 ### Copy to this scripts
 
 ```bash
-cp -r gae-backup-python your-application/.
+cp -r gae_backup_python your_application/.
 ```
 
 ### Add url handler to app.yaml
@@ -24,7 +24,7 @@ cp -r gae-backup-python your-application/.
 ```app.yaml
 handlers:
 - url: /gae-backup
-  script: gae-backup-python.backup.app
+  script: gae_backup_python.backup.app
   login: admin
 ```
 

@@ -11,42 +11,15 @@ http://opensource.org/licenses/mit-license.php
 import logging
 import datetime
 import webapp2
+import re
 from google.appengine.ext import ndb
 from google.appengine.api import taskqueue
 from google.appengine.ext.ndb import metadata
 from google.appengine.api import blobstore
 from google.appengine.api import files
 import config
-
-
-class AeBackupInformation(ndb.Model):
-    """_AE_Backup_Information model"""
-    name = ndb.StringProperty()
-    kinds = ndb.StringProperty()
-    namespaces = ndb.StringProperty(repeated=True)
-    filesystem = ndb.StringProperty()
-    start_time = ndb.StringProperty()
-    completed_jobs = ndb.StringProperty(repeated=True)
-    complete_time = ndb.DateTimeProperty()
-    orginal_app = ndb.StringProperty()
-    gs_handle = ndb.TextProperty()
-    destination = ndb.StringProperty()
-
-    @classmethod
-    def _get_kind(cls):
-        return '_AE_Backup_Information'
-
-    def get_kind_files(self):
-        return AeBackupInformationKindFiles.query(ancestor=self.key).fetch()
-
-
-class AeBackupInformationKindFiles(ndb.Model):
-    """_AE_Backup_Information_Kind_Files model"""
-    files = ndb.StringProperty(repeated=True)
-
-    @classmethod
-    def _get_kind(cls):
-        return '_AE_Backup_Information_Kind_Files'
+from models import AeBackupInformation
+from models import AeBackupInformationKindFiles
 
 
 class GaeBackup(webapp2.RequestHandler):
@@ -98,7 +71,10 @@ class GaeBackup(webapp2.RequestHandler):
             logging.error(ex)
 
     def get_old_backup_infos(self):
-        backup_infos = AeBackupInformation.query().fetch()
+        infos = AeBackupInformation.query().fetch()
+        # don't delete backup with a different name
+        backup_infos = filter(
+            lambda info: info.name.startswith(config.BACKUP_NAME), infos)
         if len(backup_infos) <= 2:
             return []
 
@@ -109,12 +85,13 @@ class GaeBackup(webapp2.RequestHandler):
                       backup_infos)
 
     def delete_backup(self, backup_info):
+        """delete infomation entities and files"""
         kind_files = backup_info.get_kind_files()
         logging.info(backup_info.filesystem)
         if backup_info.filesystem == 'blobstore':
             self.delete_blobstore_files(kind_files)
         elif backup_info.filesystem == 'gs':
-            pass
+            self.delete_gs_files(backup_info, kind_files)
 
         # delete backup information entities
         keys = [backup_info.key]
@@ -139,6 +116,33 @@ class GaeBackup(webapp2.RequestHandler):
                 delete_files = []
         if delete_files:
             blobstore.delete(delete_files)
+
+    def delete_gs_files(self, backup_info, kind_files):
+        """delete files in cloud storage"""
+        all_files = []
+        for kind_file in kind_files:
+            all_files += kind_file.files
+
+        ma = re.match(r'^(.*)\.backup_info$', backup_info.gs_handle)
+        if ma:
+            prefix = ma.group(1)
+        else:
+            logging.error('gs file name is not match')
+            raise Exception('gs file name is not match')
+
+        for kind in backup_info.kinds:
+            all_files.append(prefix + '.' + kind + '.backup_info')
+
+        all_files.append(backup_info.gs_handle)
+
+        delete_files = []
+        for file_name in all_files:
+            delete_files.append(file_name)
+            if len(delete_files) == 100:
+                files.delete(*delete_files)
+                delete_files = []
+        if delete_files:
+            files.delete(*delete_files)
 
 
 app = webapp2.WSGIApplication(

@@ -6,7 +6,7 @@ threadsafe: true
 
 handlers:
 - url: /gae-backup
-  script: gae-backup-python.backup.app
+  script: gae_backup_python.backup.app
   login: admin
 
 - url: /makedata
