@@ -87,7 +87,6 @@ class GaeBackup(webapp2.RequestHandler):
     def delete_backup(self, backup_info):
         """delete infomation entities and files"""
         kind_files = backup_info.get_kind_files()
-        logging.info(backup_info.filesystem)
         if backup_info.filesystem == 'blobstore':
             self.delete_blobstore_files(kind_files)
         elif backup_info.filesystem == 'gs':
